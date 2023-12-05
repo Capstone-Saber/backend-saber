@@ -1,133 +1,53 @@
 Collection: sensors
 [
-  alat-1: {
-    tegangan: double,
-    arus: [
-      {
-        id: arus_1,
-        usage: [
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-        ]
-      },
-      {
-        id: arus_2,
-        usage: [
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-        ]
-      },
-      {
-        id: arus_3,
-        usage: [
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-        ]
-      },
-    ]
-  },
-  alat-2: {
-    tegangan: double,
-    arus: [
-      {
-        id: arus_1,
-        usage: [
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-        ]
-      },
-      {
-        id: arus_2,
-        usage: [
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-        ]
-      },
-      {
-        id: arus_3,
-        usage: [
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-          {
-            id: string,
-            arus: double,
-            timestamp: timestamp,
-          },
-        ]
-      },
-    ]
-  },
+  alat-1: [
+    {
+      id: string,
+      timestamp: timestamp,
+      voltage: double,
+      usage: [
+        {
+          id: arus_1-datetime,
+          arus: double,
+          arusID: ref to arus Collection
+        },
+        {
+          id: arus_2-datetime,
+          arus: double,
+          arusID: ref to arus Collection
+        },
+        {
+          id: arus_3-datetime,
+          arus: double,
+          arusID: ref to arus Collection
+        },
+        ...
+      ]
+    },
+    {
+      id: string,
+      timestamp: timestamp,
+      voltage: double,
+      usage: [
+        {
+          id: arus_1-datetime,
+          arus: double,
+          arusID: ref to arus Collection
+        },
+        {
+          id: arus_2-datetime,
+          arus: double,
+          arusID: ref to arus Collection
+        },
+        {
+          id: arus_3-datetime,
+          arus: double,
+          arusID: ref to arus Collection
+        },
+        ...
+      ]
+    },
+    ...
+  ],
+  ...
 ]
