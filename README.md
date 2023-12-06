@@ -19,7 +19,7 @@ Start a service using command:
 npm run dev
 ```
 
-To run on development environment. <br> <br>
+To run on development environment.
 
 or
 
@@ -27,4 +27,4 @@ or
 npm run start
 ```
 
-To run on production environment. <br> <br>
+To run on production environment.
