@@ -35,7 +35,7 @@ const { nanoid } = require('nanoid')
 //   }
 // })
 
-// POST Electricity Usage
+// [POST] Send electricity usage from IoT device
 router.post('/:alat_id', async (req, res, next) => {
   try {
     const { alat_id } = req.params
@@ -75,46 +75,6 @@ router.post('/:alat_id', async (req, res, next) => {
     res.status(200).json({
       status: "Success",
       message: 'Data Added',
-    })
-  } catch (error) {
-    res.status(error.statusCode || 500).json({
-      status: "Error",
-      message: error.message
-    })
-  }
-});
-
-// Register new User
-router.post("/register", async (req, res, next) => {
-  try {
-    const { name, username, password } = req.body;
-
-    const salt = await bcrypt.genSalt(6);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    const id = nanoid()
-
-    // SELECT * FROM users WHERE username = username
-    const usersRef = db.collection('users');
-    const snapshot = await usersRef.where('username', '==', username).get();
-
-    // Ngecek username udah ada atau belum
-    if (!snapshot.empty) {
-      const error = new Error(`Username ${username} already exist!`);
-      error.statusCode = 400;
-      throw error;
-    }
-
-    // Masukkin data ke table users
-    await usersRef.doc(id).set({
-      name: name ? name : username,
-      username,
-      password: hashedPassword
-    });
-
-    // Send response
-    res.status(201).json({
-      status: "Success",
-      message: "Register Successful",
     })
   } catch (error) {
     res.status(error.statusCode || 500).json({

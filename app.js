@@ -7,10 +7,15 @@ const electricityRoute = require('./routes/electricity')
 const app = express()
 const port = process.env.PORT || '5000';
 
+
 app.use(cors())
 app.use(express.json());
 app.use('/v1/users/', userRoute)
 app.use('/v1/electricities/', electricityRoute)
+
+app.get('/', (req, res) => {
+  res.send('Welcome to Saber API! 😁')
+})
 
 app.listen(port, () => {
   console.log('Server Connected on port:' + port + '/');

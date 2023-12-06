@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const key = process.env.TOKEN_SECRET_KEY;
 const { nanoid } = require('nanoid')
 
+// [GET] Get all users
 router.get('/', async (req, res) => {
   try {
     const allData = []
@@ -29,6 +30,7 @@ router.get('/', async (req, res) => {
   }
 })
 
+// [POST] Login User
 router.post("/login", async (req, res, next) => {
   try {
     const { username, password } = req.body;
@@ -81,7 +83,7 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-// Register new User
+// [POST] Register a new user
 router.post("/register", async (req, res, next) => {
   try {
     const { name, username, password } = req.body;
