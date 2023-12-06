@@ -13,5 +13,5 @@ app.use('/v1/users/', userRoute)
 app.use('/v1/electricities/', electricityRoute)
 
 app.listen(port, () => {
-  console.log('Server Connected on: http://localhost:' + port + '/');
+  console.log('Server Connected on port:' + port + '/');
 })
