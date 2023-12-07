@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
       data: allData
     })
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
+    res.status(error.statusCode || 500).json({
       status: "Error",
       message: error.message,
     })
