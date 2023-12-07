@@ -8,32 +8,32 @@ const key = process.env.TOKEN_SECRET_KEY;
 const { nanoid } = require('nanoid')
 
 
-// // GET all
-// router.get('/:alat_id/usages?', async (req, res) => {
-//   try {
-//     const { alat_id } = req.params;
-//     const { date } = req.query;
+// [GET] Get electricity usage from DB
+router.get('/:alat_id/usages?', async (req, res) => {
+  //   try {
+  //     const { alat_id } = req.params;
+  //     const { date } = req.query;
 
-//     const allData = []
-//     const usersRef = db.collection('users');
-//     const snapshot = await usersRef.get();
+  //     const allData = []
+  //     const usersRef = db.collection('users');
+  //     const snapshot = await usersRef.get();
 
-//     snapshot.forEach((hasil) => {
-//       allData.push(hasil.data())
-//     })
+  //     snapshot.forEach((hasil) => {
+  //       allData.push(hasil.data())
+  //     })
 
-//     res.status(200).json({
-//       status: "Success",
-//       message: 'Successfully get all users',
-//       data: allData
-//     })
-//   } catch (error) {
-//     return res.status(error.statusCode || 500).json({
-//       status: "Error",
-//       message: error.message,
-//     })
-//   }
-// })
+  //     res.status(200).json({
+  //       status: "Success",
+  //       message: 'Successfully get all users',
+  //       data: allData
+  //     })
+  //   } catch (error) {
+  //     return res.status(error.statusCode || 500).json({
+  //       status: "Error",
+  //       message: error.message,
+  //     })
+  //   }
+})
 
 // [POST] Send electricity usage from IoT device
 router.post('/:alat_id', async (req, res, next) => {
