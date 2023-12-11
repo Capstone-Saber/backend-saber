@@ -2,10 +2,11 @@ require('dotenv').config();
 const express = require('express')
 const cors = require('cors')
 const userRoute = require('./routes/user')
-const electricityRoute = require('./routes/electricity')
+const electricityRoute = require('./routes/electricity');
+const { port } = require('./config/');
 
 const app = express()
-const port = process.env.PORT || '5000';
+const serverPort = port || '5000';
 
 app.use(cors())
 app.use(express.json());
@@ -16,6 +17,6 @@ app.get('/', (req, res) => {
   res.send('Welcome to Saber API! 😁')
 })
 
-app.listen(port, () => {
-  console.log('Server Connected on port: ' + port + '/');
+app.listen(serverPort, () => {
+  console.log('Server Connected on port: ' + serverPort + '/');
 })
