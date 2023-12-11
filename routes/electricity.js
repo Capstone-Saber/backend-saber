@@ -18,13 +18,11 @@ router.get('/:alat_id/usages', async (req, res) => {
     // Get start time of usages
     const startTime = date ? new Date(date) : new Date();
     // Convert the time to UTC. I know it's a bad practice :(
-    startTime.setHours(startTime.getHours() - 7);
-    startTime.setHours(0, 0, 0, 0)
+    startTime.setUTCHours(startTime.getUTCHours() - 7);
 
     // Get end time of usages
-    const endTime = new Date();
-    endTime.setDate(startTime.getDate() + 1)
-    endTime.setHours(0, 0, 0, 0)
+    const endTime = new Date(startTime);
+    endTime.setUTCDate(startTime.getUTCDate() + 1)
 
     const convertedDate = startTime.getFullYear() + "-" + startTime.getMonth() + "-" + startTime.getDate()
 
@@ -48,8 +46,8 @@ router.get('/:alat_id/usages', async (req, res) => {
     usagesSnapshot.forEach(usageSnapshot => {
       const { voltage, timestamp } = usageSnapshot.data()
       let convertedTime = timestamp.toDate()
-      convertedTime.setHours(convertedTime.getUTCHours() + 7) // Convert the time to UTC+7
-      const hourMinute = ("0" + (convertedTime.getHours())).slice(-2) + "." +
+      convertedTime.setUTCHours(convertedTime.getUTCHours() + 7) // Convert back the time to UTC+7
+      const hourMinute = ("0" + (convertedTime.getUTCHours())).slice(-2) + "." +
         ("0" + convertedTime.getUTCMinutes()).slice(-2)
       usages.push({
         _id: usageSnapshot.id,
