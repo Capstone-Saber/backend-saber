@@ -12,19 +12,18 @@ router.get('/:alat_id/usages', async (req, res) => {
   try {
     const { alat_id } = req.params;
     const { date } = req.query;
-
     const usages = []
+    const newDate = date ? new Date(date) : new Date();
 
-    // Get start time of usages
-    const startTime = date ? new Date(date) : new Date();
+    // Get start time of usage
+    const startTime = newDate;
     // Convert the time to UTC. I know it's a bad practice :(
     startTime.setUTCHours(startTime.getUTCHours() - 7);
-
     // Get end time of usages
     const endTime = new Date(startTime);
     endTime.setUTCDate(startTime.getUTCDate() + 1)
-
-    const convertedDate = startTime.getFullYear() + "-" + startTime.getMonth() + "-" + startTime.getDate()
+    // Convert date to YYYY-MM-DD
+    const convertedDate = newDate.getUTCFullYear() + "-" + newDate.getUTCMonth() + "-" + newDate.getDate()
 
     // Get all usages data from a sensor where date == date
     const sensorRef = db.collection('sensors').doc(alat_id);
@@ -58,13 +57,12 @@ router.get('/:alat_id/usages', async (req, res) => {
 
     const result = usages.map(async usage => {
       let powerSum = 0
-
       // Query all current usages by seconds
       const currentUsagesSnapshot = await usagesRef.doc(usage._id).collection("current_usages").get()
       currentUsagesSnapshot.forEach((currentUsageSnapshot) => {
         const { current } = currentUsageSnapshot.data()
         const power = current * usage.voltage // Calculate the power from each current
-        powerSum += power; // Insert each current to currents object
+        powerSum += power; // Accumulate all power from each current
       })
       return { ...usage, totalPower: powerSum }
     })
@@ -73,9 +71,7 @@ router.get('/:alat_id/usages', async (req, res) => {
       const groupedUsageById = Object.entries(
         usageResult.reduce((acc, { timestamp, totalPower }) => {
           // Group initialization
-          if (!acc[timestamp]) {
-            acc[timestamp] = [];
-          }
+          if (!acc[timestamp]) acc[timestamp] = [];
           // Grouping
           acc[timestamp].push(totalPower);
           return acc;
@@ -104,19 +100,18 @@ router.get('/:alat_id/usages/detail', async (req, res) => {
   try {
     const { alat_id } = req.params;
     const { date } = req.query;
-
     const usages = []
+    const newDate = date ? new Date(date) : new Date();
 
-    // Get start time of usages
-    const startTime = date ? new Date(date) : new Date();
-    startTime.setHours(0, 0, 0, 0)
-
+    // Get start time of usage
+    const startTime = newDate;
+    // Convert the time to UTC. I know it's a bad practice :(
+    startTime.setUTCHours(startTime.getUTCHours() - 7);
     // Get end time of usages
-    const endTime = new Date();
-    endTime.setDate(startTime.getDate() + 1)
-    endTime.setHours(0, 0, 0, 0)
-
-    const convertedDate = startTime.getFullYear() + "-" + startTime.getMonth() + "-" + startTime.getDate()
+    const endTime = new Date(startTime);
+    endTime.setUTCDate(startTime.getUTCDate() + 1)
+    // Convert date to YYYY-MM-DD
+    const convertedDate = newDate.getUTCFullYear() + "-" + newDate.getUTCMonth() + "-" + newDate.getDate()
 
     // Get all usages data from a sensor where date == date
     const sensorRef = db.collection('sensors').doc(alat_id);
@@ -138,8 +133,10 @@ router.get('/:alat_id/usages/detail', async (req, res) => {
     // Insert each docs to usages object
     usagesSnapshot.forEach(usageSnapshot => {
       const { voltage, timestamp } = usageSnapshot.data()
-      const convertedTime = timestamp.toDate()
-      const hourMinute = ("0" + convertedTime.getHours()).slice(-2) + "." + ("0" + convertedTime.getMinutes()).slice(-2)
+      let convertedTime = timestamp.toDate()
+      convertedTime.setUTCHours(convertedTime.getUTCHours() + 7) // Convert back the time to UTC+7
+      const hourMinute = ("0" + (convertedTime.getUTCHours())).slice(-2) + "." +
+        ("0" + convertedTime.getUTCMinutes()).slice(-2)
       usages.push({
         _id: usageSnapshot.id,
         voltage,
@@ -150,18 +147,14 @@ router.get('/:alat_id/usages/detail', async (req, res) => {
     const result = usages.map(async usage => {
       let powerSum = 0
       const currents = []
-
       // Query all current usages by seconds
       const currentUsagesSnapshot = await usagesRef.doc(usage._id).collection("current_usages").get()
       currentUsagesSnapshot.forEach((currentUsageSnapshot) => {
         const { current } = currentUsageSnapshot.data()
-
         // Calculate the power from each current
         const power = current * usage.voltage
-
         // Accumulate all power from each current
         powerSum += power;
-
         // Insert each current to currents object
         currents.push(current)
       })
