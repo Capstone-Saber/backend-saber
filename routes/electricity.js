@@ -1,11 +1,7 @@
 const { Timestamp } = require("@firebase/firestore");
 const router = require('express').Router()
 const db = require('../config/firebase')
-
-const jwt = require('jsonwebtoken');
-const key = process.env.TOKEN_SECRET_KEY;
 const { nanoid } = require('nanoid')
-
 
 // [GET] Get average power (1m) usage from DB
 router.get('/:alat_id/usages', async (req, res) => {
@@ -23,7 +19,9 @@ router.get('/:alat_id/usages', async (req, res) => {
     const endTime = new Date(startTime);
     endTime.setUTCDate(startTime.getUTCDate() + 1)
     // Convert date to YYYY-MM-DD
-    const convertedDate = newDate.getUTCFullYear() + "-" + newDate.getUTCMonth() + "-" + newDate.getDate()
+    const convertedDate = newDate.getUTCFullYear() + "-" +
+      (newDate.getUTCMonth() + 1) + "-" +
+      (newDate.getUTCDate() + 1)
 
     // Get all usages data from a sensor where date == date
     const sensorRef = db.collection('sensors').doc(alat_id);
@@ -111,7 +109,9 @@ router.get('/:alat_id/usages/detail', async (req, res) => {
     const endTime = new Date(startTime);
     endTime.setUTCDate(startTime.getUTCDate() + 1)
     // Convert date to YYYY-MM-DD
-    const convertedDate = newDate.getUTCFullYear() + "-" + newDate.getUTCMonth() + "-" + newDate.getDate()
+    const convertedDate = newDate.getUTCFullYear() + "-" +
+      (newDate.getUTCMonth() + 1) + "-" +
+      (newDate.getUTCDate() + 1)
 
     // Get all usages data from a sensor where date == date
     const sensorRef = db.collection('sensors').doc(alat_id);
