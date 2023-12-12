@@ -179,7 +179,7 @@ const sendElectricityHandler = async (req, res, next) => {
     const { alat_id } = req.params
 
     // Ngambil data voltage (double) dan arus (array)
-    const { voltage, arus } = req.body;
+    const { voltage, current } = req.body;
 
     const usageID = nanoid()
     const sensorRef = db.collection('sensors').doc(alat_id);
@@ -196,19 +196,19 @@ const sendElectricityHandler = async (req, res, next) => {
 
     const timestampID = Date.now()
     await currentRef.doc(`arus-1_${timestampID}`).set({
-      current: arus[0],
+      current: current[0],
       currentID: db.collection('currents').doc('arus_1')
     })
     await currentRef.doc(`arus-2_${timestampID}`).set({
-      current: arus[1],
+      current: current[1],
       currentID: db.collection('currents').doc('arus_2')
     })
     await currentRef.doc(`arus-3_${timestampID}`).set({
-      current: arus[2],
+      current: current[2],
       currentID: db.collection('currents').doc('arus_3')
     })
 
-    res.status(200).json({
+    res.status(201).json({
       status: "Success",
       message: 'Data Added',
     })

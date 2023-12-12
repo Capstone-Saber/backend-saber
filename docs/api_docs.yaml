@@ -109,6 +109,49 @@ paths:
                     type: string
                     description: Error message indicating invalid username or password.
 
+  /v1/electricties/{alat_id}:
+    post:
+      summary: post current electricity usage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                voltage:
+                  type: number
+                  description: IoT device's voltage in volt
+                current:
+                  type: array
+                  description: IoT device's currents in ampere
+      responses:
+        '201':
+          description: Data added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successfully added electricity usage.
+        '401':
+          description: Bad request, token is required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Error message indicating the user need to login.
+
 components:
   securitySchemes:
     bearerAuth:
