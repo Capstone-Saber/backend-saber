@@ -132,12 +132,14 @@ const averageElectricityHandler = async (req, res) => {
       const { voltage, timestamp } = usageSnapshot.data()
       let convertedTime = timestamp.toDate()
       convertedTime.setUTCHours(convertedTime.getUTCHours() + 7) // Convert back the time to UTC+7
-      const hourMinute = ("0" + (convertedTime.getUTCHours())).slice(-2) + "." +
-        ("0" + convertedTime.getUTCMinutes()).slice(-2)
+      const time =
+        ("0" + (convertedTime.getUTCHours())).slice(-2) + ":" +
+        ("0" + convertedTime.getUTCMinutes()).slice(-2) + ":" +
+        ("0" + convertedTime.getUTCSeconds()).slice(-2)
       usages.push({
         _id: usageSnapshot.id,
         voltage,
-        timestamp: hourMinute
+        timestamp: time
       })
     })
 
