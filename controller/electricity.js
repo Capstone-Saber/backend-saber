@@ -8,7 +8,7 @@ const averagePowerHandler = async (req, res) => {
     const { date } = req.query;
     const usages = []
     const newDate = date ? new Date(date) : new Date();
-
+    newDate.setUTCHours(0, 0, 0)
     // Get start time of usage
     const startTime = newDate;
     // Convert the time to UTC. I know it's a bad practice :(
@@ -97,7 +97,7 @@ const averageElectricityHandler = async (req, res) => {
     const { date } = req.query;
     const usages = []
     const newDate = date ? new Date(date) : new Date();
-
+    newDate.setUTCHours(0, 0, 0)
     // Get start time of usage
     const startTime = newDate;
     // Convert the time to UTC. I know it's a bad practice :(
@@ -193,7 +193,7 @@ const sendElectricityHandler = async (req, res, next) => {
       voltage,
       timestamp: currentTime
     });
-
+    // Masukkin data daftar arus ke table electricity usages
     const timestampID = Date.now()
     await currentRef.doc(`arus-1_${timestampID}`).set({
       current: current[0],
