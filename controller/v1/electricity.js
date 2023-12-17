@@ -1,4 +1,4 @@
-const { db, FieldValue } = require('../config/firebase')
+const { db, FieldValue } = require('../../config/firebase')
 const { Timestamp } = require("@firebase/firestore");
 const { nanoid } = require('nanoid')
 

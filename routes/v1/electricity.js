@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { averageElectricityHandler, averagePowerHandler, sendElectricityHandler } = require('../controller/electricity');
+const { averageElectricityHandler, averagePowerHandler, sendElectricityHandler } = require('../../controller/v1/electricity');
 
 // [GET] Get average power (1m) usage
 router.get('/:alat_id/usages', averagePowerHandler)
