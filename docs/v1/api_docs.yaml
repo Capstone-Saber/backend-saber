@@ -123,6 +123,8 @@ paths:
                   description: IoT device's voltage in volt
                 current:
                   type: array
+                  items:
+                    type: number
                   description: IoT device's currents in ampere
       responses:
         '201':
@@ -151,6 +153,68 @@ paths:
                   message:
                     type: string
                     description: Error message indicating the user need to login.
+
+  /v1/electricties/{alat_id}/usages:
+    get:
+      summary: get average power of electricity usage per minute
+      responses:
+        '200':
+          description: Successfully get all power usages on a given date (default is today)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successfully get the usage.
+        '404':
+          description: Not Found, No electricity usage on a given date.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Error message indicating no usage on a given date.
+
+  /v1/electricties/{alat_id}/usages/detail:
+    get:
+      summary: get all electricity usage (voltage, current, total power) per minute
+      responses:
+        '200':
+          description: Successfully get all power usages on a given date (default is today)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successfully get the usage.
+        '404':
+          description: Not Found, No electricity usage on a given date.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Error message indicating no usage on a given date.
 
 components:
   securitySchemes:
