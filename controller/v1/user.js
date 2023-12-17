@@ -1,7 +1,7 @@
-const db = require('../config/firebase')
+const { db } = require('../../config/firebase')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { jwtSecret } = require('../config');
+const { jwtSecret } = require('../../config');
 
 const loginHandler = async (req, res, next) => {
   try {
