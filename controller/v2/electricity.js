@@ -11,6 +11,9 @@ const averagePowerHandler = async (req, res) => {
     const startTime = newDate;
     // Convert the time to UTC. I know it's a bad practice :(
     startTime.setUTCHours(startTime.getUTCHours() - 7);
+    // Set the end time
+    const endTime = new Date(startTime);
+    endTime.setUTCMilliseconds(999)
 
     // Convert date to YYYY-MM-DD
     const convertedDate = newDate.getUTCFullYear() + "-" +
@@ -20,6 +23,7 @@ const averagePowerHandler = async (req, res) => {
     const sensorRef = db.collection('electrcities');
     const usagesSnapshot = await sensorRef
       .where('startDate', '>=', startTime)
+      .where('startDate', '<=', endTime)
       .limit(1)
       .get()
 
