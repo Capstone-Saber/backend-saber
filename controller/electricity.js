@@ -1,4 +1,4 @@
-const db = require('../config/firebase')
+const { db, FieldValue } = require('../config/firebase')
 const { Timestamp } = require("@firebase/firestore");
 const { nanoid } = require('nanoid')
 
@@ -118,7 +118,6 @@ const averageElectricityHandler = async (req, res) => {
       .where('timestamp', '<', endTime)
       .orderBy('timestamp')
       .get()
-    // const usagesSnapshot = await usagesRef.get();
 
     // Check if there is a usage or not in a given date
     if (usagesSnapshot.empty) {
@@ -178,37 +177,43 @@ const averageElectricityHandler = async (req, res) => {
 
 const sendElectricityHandler = async (req, res, next) => {
   try {
-    const { alat_id } = req.params
-
     // Ngambil data voltage (double) dan arus (array)
     const { voltage, current } = req.body;
+    const date = new Date()
+    date.setUTCHours(0, 0, 0)
+    // Convert the time to UTC. I know it's a bad practice :(
+    date.setUTCHours(date.getUTCHours() - 7);
 
-    const usageID = nanoid()
-    const sensorRef = db.collection('sensors').doc(alat_id);
-    const usageRef = sensorRef.collection('electricity_usages').doc(usageID)
-    const currentRef = usageRef.collection('current_usages')
+    const sensorRef = db.collection('electrcities');
+    const usagesSnapshot = await sensorRef
+      .where('startDate', '>=', date)
+      .limit(1)
+      .get()
 
-    let currentTime = Timestamp.fromDate(new Date()).toDate();
-
-    // Masukkin data waktu sama voltage ke table electricity_usages
-    await usageRef.set({
-      voltage,
-      timestamp: currentTime
-    });
-    // Masukkin data daftar arus ke table electricity usages
-    const timestampID = Date.now()
-    await currentRef.doc(`arus-1_${timestampID}`).set({
-      current: current[0],
-      currentID: db.collection('currents').doc('arus_1')
-    })
-    await currentRef.doc(`arus-2_${timestampID}`).set({
-      current: current[1],
-      currentID: db.collection('currents').doc('arus_2')
-    })
-    await currentRef.doc(`arus-3_${timestampID}`).set({
-      current: current[2],
-      currentID: db.collection('currents').doc('arus_3')
-    })
+    // Check if there is a usage or not in a given date
+    if (!usagesSnapshot.empty) {
+      const id = usagesSnapshot.docs[0].data()._id
+      const newUsage = {
+        current,
+        voltage,
+        timestamp: Timestamp.fromDate(new Date()).toDate()
+      }
+      await sensorRef.doc(id).update({
+        usages: FieldValue.arrayUnion(newUsage)
+      });
+    } else {
+      const docID = nanoid()
+      const newUsage = {
+        current,
+        voltage,
+        timestamp: Timestamp.fromDate(new Date()).toDate()
+      }
+      await sensorRef.doc(docID).set({
+        _id: docID,
+        startDate: date,
+        usages: [newUsage]
+      })
+    }
 
     res.status(201).json({
       status: "Success",
