@@ -1,4 +1,5 @@
 node_modules/
 secrets/
 firebase-credentials.json
+firebase-credentials-2.json
 .env

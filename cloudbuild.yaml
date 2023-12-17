@@ -25,7 +25,7 @@ steps:
         '--image',
         'gcr.io/$PROJECT_ID/saber-backend',
         '--memory',
-        '512Mi',
+        '2Gi',
         '--no-cpu-throttling',
         '--min-instances',
         '1',
