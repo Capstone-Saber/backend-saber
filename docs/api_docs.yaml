@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: Saber API
-  version: 0.8.0
+  version: 2.0.1
 servers:
   - url: https://saber-backend-gquk47qgta-et.a.run.app
     description: Development server
@@ -109,7 +109,7 @@ paths:
                     type: string
                     description: Error message indicating invalid username or password.
 
-  /v1/electricties/{alat_id}:
+  /v1/electricties/{sensor_id}:
     post:
       summary: post current electricity usage
       requestBody:
@@ -140,8 +140,8 @@ paths:
                   message:
                     type: string
                     description: Message indicating successfully added electricity usage.
-        '401':
-          description: Bad request, token is required
+        '404':
+          description: Not Found, sensor not found
           content:
             application/json:
               schema:
@@ -152,11 +152,65 @@ paths:
                     description: Status of the operation.
                   message:
                     type: string
-                    description: Error message indicating the user need to login.
+                    description: Error message indicating the sensor id is invalid.
 
-  /v1/electricties/{alat_id}/usages:
+  /v1/electricties/{sensor_id}/usages:
     get:
-      summary: get average power of electricity usage per minute
+      summary: get average power of electricity usage per minute.
+      parameters:
+        - in: query
+          name: date
+          type: string
+          description: Date of the usage.
+          required: false
+      responses:
+        '200':
+          description: Successfully get all power usages on a given date (default is today).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successfully get the usage.
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          description: Timestamp (in minute) of the usage.
+                        avgPower:
+                          type: number
+                          description: Average power of the usage.
+        '404':
+          description: Not Found, No electricity usage on a given date.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Error message indicating no usage on a given date.
+
+  /v1/electricties/{sensor_id}/usages/detail:
+    get:
+      summary: get all electricity usage (voltage, current, total power) per minute
+      parameters:
+        - in: query
+          name: date
+          type: string
+          description: Date of the usage.
+          required: false
       responses:
         '200':
           description: Successfully get all power usages on a given date (default is today)
@@ -185,9 +239,45 @@ paths:
                     type: string
                     description: Error message indicating no usage on a given date.
 
-  /v1/electricties/{alat_id}/usages/detail:
+  /v2/electricties/:
+    post:
+      summary: post current electricity usage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                voltage:
+                  type: number
+                  description: IoT device's voltage in volt
+                current:
+                  type: number
+                  description: IoT device's currents in ampere
+      responses:
+        '201':
+          description: Data added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successfully added electricity usage.
+
+  /v2/electricties/usages:
     get:
-      summary: get all electricity usage (voltage, current, total power) per minute
+      summary: get average power of electricity usage per minute
+      parameters:
+        - in: query
+          name: date
+          type: string
+          description: Date of the usage.
+          required: false
       responses:
         '200':
           description: Successfully get all power usages on a given date (default is today)
@@ -202,6 +292,17 @@ paths:
                   message:
                     type: string
                     description: Message indicating successfully get the usage.
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          description: Timestamp (in minute) of the usage.
+                        avgPower:
+                          type: number
+                          description: Average power of the usage.
         '404':
           description: Not Found, No electricity usage on a given date.
           content:
