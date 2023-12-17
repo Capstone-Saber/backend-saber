@@ -1,0 +1,325 @@
+openapi: 3.0.2
+info:
+  title: Saber API
+  version: 2.0.1
+servers:
+  - url: https://saber-backend-gquk47qgta-et.a.run.app
+    description: Development server
+  - url: http://localhost:5000
+    description: Local Development server
+paths:
+  /v1/users/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the user.
+                username:
+                  type: string
+                  description: The username of the user.
+                password:
+                  type: string
+                  format: password
+                  description: The password for the user account.
+              required:
+                - name
+                - username
+                - password
+      responses:
+        '201':
+          description: Register Successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successful registration.
+        '400':
+          description: Bad request, username has been registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Error message indicating the username has already been registered.
+
+  /v1/users/login:
+    post:
+      summary: User login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username of the user.
+                password:
+                  type: string
+                  format: password
+                  description: The password for the user account.
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Login Successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successful login.
+                  token:
+                    type: string
+                    description: JWT token for the user session.
+        '400':
+          description: Wrong username or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Error message indicating invalid username or password.
+
+  /v1/electricties/{sensor_id}:
+    post:
+      summary: post current electricity usage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                voltage:
+                  type: number
+                  description: IoT device's voltage in volt
+                current:
+                  type: array
+                  items:
+                    type: number
+                  description: IoT device's currents in ampere
+      responses:
+        '201':
+          description: Data added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successfully added electricity usage.
+        '404':
+          description: Not Found, sensor not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Error message indicating the sensor id is invalid.
+
+  /v1/electricties/{sensor_id}/usages:
+    get:
+      summary: get average power of electricity usage per minute.
+      parameters:
+        - in: query
+          name: date
+          type: string
+          description: Date of the usage.
+          required: false
+      responses:
+        '200':
+          description: Successfully get all power usages on a given date (default is today).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successfully get the usage.
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          description: Timestamp (in minute) of the usage.
+                        avgPower:
+                          type: number
+                          description: Average power of the usage.
+        '404':
+          description: Not Found, No electricity usage on a given date.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Error message indicating no usage on a given date.
+
+  /v1/electricties/{sensor_id}/usages/detail:
+    get:
+      summary: get all electricity usage (voltage, current, total power) per minute
+      parameters:
+        - in: query
+          name: date
+          type: string
+          description: Date of the usage.
+          required: false
+      responses:
+        '200':
+          description: Successfully get all power usages on a given date (default is today)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successfully get the usage.
+        '404':
+          description: Not Found, No electricity usage on a given date.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Error message indicating no usage on a given date.
+
+  /v2/electricties/:
+    post:
+      summary: post current electricity usage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                voltage:
+                  type: number
+                  description: IoT device's voltage in volt
+                current:
+                  type: number
+                  description: IoT device's currents in ampere
+      responses:
+        '201':
+          description: Data added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successfully added electricity usage.
+
+  /v2/electricties/usages:
+    get:
+      summary: get average power of electricity usage per minute
+      parameters:
+        - in: query
+          name: date
+          type: string
+          description: Date of the usage.
+          required: false
+      responses:
+        '200':
+          description: Successfully get all power usages on a given date (default is today)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: status of the operation.
+                  message:
+                    type: string
+                    description: Message indicating successfully get the usage.
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          description: Timestamp (in minute) of the usage.
+                        avgPower:
+                          type: number
+                          description: Average power of the usage.
+        '404':
+          description: Not Found, No electricity usage on a given date.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                  message:
+                    type: string
+                    description: Error message indicating no usage on a given date.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
