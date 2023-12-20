@@ -5,7 +5,14 @@ const { nanoid } = require('nanoid')
 const averagePowerPerMinuteHandler = async (req, res) => {
   try {
     const { date } = req.query;
-    const newDate = date ? new Date(date) : new Date();
+    let newDate;
+    if (date) {
+      newDate = new Date(date)
+      newDate.setUTCHours(0, 0, 0, 0)
+    } else {
+      newDate = new Date()
+      // newDate.setUTCHours(newDate.getUTCHours() + 7, 0, 0, 0)
+    }
     newDate.setUTCHours(0, 0, 0, 0)
     // Get start time of usage
     const startTime = newDate;
@@ -14,6 +21,7 @@ const averagePowerPerMinuteHandler = async (req, res) => {
     // Set the end time
     const endTime = new Date(startTime);
     endTime.setUTCMilliseconds(999)
+    console.log(startTime, endTime)
 
     // Convert date to YYYY-MM-DD
     const convertedDate = newDate.getUTCFullYear() + "-" +
@@ -34,6 +42,7 @@ const averagePowerPerMinuteHandler = async (req, res) => {
       throw error;
     }
 
+    console.log(usagesSnapshot.docs[0].data().startDate.toDate())
     const usages = usagesSnapshot.docs[0].data().usages
     usages.forEach(usage => {
       // Convert back the time to UTC+7
@@ -210,9 +219,10 @@ const sendElectricityHandler = async (req, res, next) => {
 
     // Get start time of usage
     const startTime = new Date();
-    startTime.setUTCHours(0, 0, 0, 0)
+    // startTime.setUTCHours(0, 0, 0, 0)
     // Convert the time to UTC. I know it's a bad practice :(
-    startTime.setUTCHours(startTime.getUTCHours() - 7);
+    // startTime.setUTCHours(startTime.getUTCHours() - 7);
+    console.log(startTime.toString())
 
     const sensorRef = db.collection('electrcities');
     const usagesSnapshot = await sensorRef
@@ -225,6 +235,7 @@ const sendElectricityHandler = async (req, res, next) => {
       If yes, update the usage doc
       If not, create a new doc based on a given date
     */
+
     if (!usagesSnapshot.empty) {
       const id = usagesSnapshot.docs[0].data()._id
       const newUsage = {
@@ -232,21 +243,23 @@ const sendElectricityHandler = async (req, res, next) => {
         voltage,
         timestamp: Timestamp.fromDate(new Date()).toDate()
       }
-      await sensorRef.doc(id).update({
-        usages: FieldValue.arrayUnion(newUsage)
-      });
+      console.log(usagesSnapshot.docs[0].data().startDate.toDate().toString())
+      // await sensorRef.doc(id).update({
+      //   usages: FieldValue.arrayUnion(newUsage)
+      // });
     } else {
+      console.log('gada')
       const docID = nanoid()
       const newUsage = {
         current,
         voltage,
         timestamp: Timestamp.fromDate(new Date()).toDate()
       }
-      await sensorRef.doc(docID).set({
-        _id: docID,
-        startDate: startTime,
-        usages: [newUsage]
-      })
+      // await sensorRef.doc(docID).set({
+      //   _id: docID,
+      //   startDate: startTime,
+      //   usages: [newUsage]
+      // })
     }
 
     res.status(201).json({
