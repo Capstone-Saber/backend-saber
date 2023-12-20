@@ -109,7 +109,7 @@ paths:
                     type: string
                     description: Error message indicating invalid username or password.
 
-  /v1/electricties/{sensor_id}:
+  /v1/electricities/{sensor_id}:
     post:
       summary: post current electricity usage
       requestBody:
@@ -154,7 +154,7 @@ paths:
                     type: string
                     description: Error message indicating the sensor id is invalid.
 
-  /v1/electricties/{sensor_id}/usages:
+  /v1/electricities/{sensor_id}/usages:
     get:
       summary: get average power of electricity usage per minute.
       parameters:
@@ -202,7 +202,7 @@ paths:
                     type: string
                     description: Error message indicating no usage on a given date.
 
-  /v1/electricties/{sensor_id}/usages/detail:
+  /v1/electricities/{sensor_id}/usages/detail:
     get:
       summary: get all electricity usage (voltage, current, total power) per minute
       parameters:
@@ -239,7 +239,7 @@ paths:
                     type: string
                     description: Error message indicating no usage on a given date.
 
-  /v2/electricties/:
+  /v2/electricities/:
     post:
       summary: post current electricity usage
       requestBody:
@@ -269,7 +269,7 @@ paths:
                     type: string
                     description: Message indicating successfully added electricity usage.
 
-  /v2/electricties/usages:
+  /v2/electricities/usages:
     get:
       summary: get average power of electricity usage per minute
       parameters:
