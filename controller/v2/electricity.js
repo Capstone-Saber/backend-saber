@@ -11,6 +11,7 @@ const averagePowerPerMinuteHandler = async (req, res) => {
       newDate.setUTCHours(0, 0, 0, 0)
     } else {
       newDate = new Date()
+      console.log(newDate.toString())
       // newDate.setUTCHours(newDate.getUTCHours() + 7, 0, 0, 0)
     }
     newDate.setUTCHours(0, 0, 0, 0)
@@ -216,13 +217,8 @@ const sendElectricityHandler = async (req, res, next) => {
   try {
     // Get voltage & current data from request body
     const { voltage, current } = req.body;
-
     // Get start time of usage
     const startTime = new Date();
-    // startTime.setUTCHours(0, 0, 0, 0)
-    // Convert the time to UTC. I know it's a bad practice :(
-    // startTime.setUTCHours(startTime.getUTCHours() - 7);
-    console.log(startTime.toString())
 
     const sensorRef = db.collection('electrcities');
     const usagesSnapshot = await sensorRef
@@ -235,7 +231,6 @@ const sendElectricityHandler = async (req, res, next) => {
       If yes, update the usage doc
       If not, create a new doc based on a given date
     */
-
     if (!usagesSnapshot.empty) {
       const id = usagesSnapshot.docs[0].data()._id
       const newUsage = {
@@ -243,23 +238,22 @@ const sendElectricityHandler = async (req, res, next) => {
         voltage,
         timestamp: Timestamp.fromDate(new Date()).toDate()
       }
-      console.log(usagesSnapshot.docs[0].data().startDate.toDate().toString())
-      // await sensorRef.doc(id).update({
-      //   usages: FieldValue.arrayUnion(newUsage)
-      // });
+      await sensorRef.doc(id).update({
+        usages: FieldValue.arrayUnion(newUsage)
+      });
     } else {
-      console.log('gada')
       const docID = nanoid()
+      startTime.setUTCHours(17, 0, 0, 0)
       const newUsage = {
         current,
         voltage,
         timestamp: Timestamp.fromDate(new Date()).toDate()
       }
-      // await sensorRef.doc(docID).set({
-      //   _id: docID,
-      //   startDate: startTime,
-      //   usages: [newUsage]
-      // })
+      await sensorRef.doc(docID).set({
+        _id: docID,
+        startDate: startTime,
+        usages: [newUsage]
+      })
     }
 
     res.status(201).json({
