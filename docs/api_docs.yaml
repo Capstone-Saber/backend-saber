@@ -7,9 +7,16 @@ servers:
     description: Development server
   - url: http://localhost:5000
     description: Local Development server
+tags:
+  - name: Users
+    description: All about user account
+  - name: Electricities
+    description: Monitor and send electricity usage information
 paths:
   /v1/users/register:
     post:
+      tags:
+        - Users
       summary: Register a new user
       requestBody:
         content:
@@ -19,14 +26,14 @@ paths:
               properties:
                 name:
                   type: string
-                  description: The name of the user.
+                  description: User's name.
                 username:
                   type: string
-                  description: The username of the user.
+                  description: User's username.
                 password:
                   type: string
                   format: password
-                  description: The password for the user account.
+                  description: User's password.
               required:
                 - name
                 - username
@@ -42,11 +49,13 @@ paths:
                   status:
                     type: string
                     description: Status of the operation.
+                    example: Success
                   message:
                     type: string
                     description: Message indicating successful registration.
+                    example: Register Successful
         '400':
-          description: Bad request, username has been registered
+          description: Username has been registered
           content:
             application/json:
               schema:
@@ -55,12 +64,16 @@ paths:
                   status:
                     type: string
                     description: Status of the operation.
+                    example: Error
                   message:
                     type: string
                     description: Error message indicating the username has already been registered.
+                    example: Username [username] already exist!
 
   /v1/users/login:
     post:
+      tags:
+        - Users
       summary: User login
       requestBody:
         content:
@@ -70,11 +83,11 @@ paths:
               properties:
                 username:
                   type: string
-                  description: The username of the user.
+                  description: User's username.
                 password:
                   type: string
                   format: password
-                  description: The password for the user account.
+                  description: User's password.
               required:
                 - username
                 - password
@@ -109,87 +122,16 @@ paths:
                     type: string
                     description: Error message indicating invalid username or password.
 
-  /v1/electricities/{sensor_id}:
-    post:
-      summary: post current electricity usage
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                voltage:
-                  type: number
-                  description: IoT device's voltage in volt
-                current:
-                  type: array
-                  items:
-                    type: number
-                  description: IoT device's currents in ampere
-      responses:
-        '201':
-          description: Data added
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: status of the operation.
-                  message:
-                    type: string
-                    description: Message indicating successfully added electricity usage.
-        '404':
-          description: Not Found, sensor not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: Status of the operation.
-                  message:
-                    type: string
-                    description: Error message indicating the sensor id is invalid.
-
-  /v1/electricities/{sensor_id}/usages:
+  /v1/users/:
     get:
-      summary: get average power of electricity usage per minute.
-      parameters:
-        - in: query
-          name: date
-          type: string
-          description: Date of the usage.
-          required: false
+      tags:
+        - Users
+      summary: Get user information
+      security:
+        - bearerAuth: []
       responses:
         '200':
-          description: Successfully get all power usages on a given date (default is today).
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: status of the operation.
-                  message:
-                    type: string
-                    description: Message indicating successfully get the usage.
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        timestamp:
-                          type: string
-                          description: Timestamp (in minute) of the usage.
-                        avgPower:
-                          type: number
-                          description: Average power of the usage.
-        '404':
-          description: Not Found, No electricity usage on a given date.
+          description: Successfully get user information
           content:
             application/json:
               schema:
@@ -198,35 +140,24 @@ paths:
                   status:
                     type: string
                     description: Status of the operation.
+                    example: Success
                   message:
                     type: string
-                    description: Error message indicating no usage on a given date.
-
-  /v1/electricities/{sensor_id}/usages/detail:
-    get:
-      summary: get all electricity usage (voltage, current, total power) per minute
-      parameters:
-        - in: query
-          name: date
-          type: string
-          description: Date of the usage.
-          required: false
-      responses:
-        '200':
-          description: Successfully get all power usages on a given date (default is today)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: status of the operation.
-                  message:
-                    type: string
-                    description: Message indicating successfully get the usage.
-        '404':
-          description: Not Found, No electricity usage on a given date.
+                    description: Message indicating get user information is success.
+                    example: Successfully get user information
+                  user:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Name of the user
+                        example: John Doe
+                      username:
+                        type: string
+                        description: Username of the user
+                        example: johndoe
+        '403':
+          description: 'JWT must be included in bearer at authentication headers'
           content:
             application/json:
               schema:
@@ -235,12 +166,31 @@ paths:
                   status:
                     type: string
                     description: Status of the operation.
+                    example: Error
                   message:
                     type: string
-                    description: Error message indicating no usage on a given date.
+                    description: Error message indicating user need to login first.
+                    example: You need to login first.
+        '400':
+          description: "User doesn't exist"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                    example: Error
+                  message:
+                    type: string
+                    description: Error message indicating user doesn't exist".
+                    example: User doesn't exist
 
   /v2/electricities/:
     post:
+      tags:
+        - Electricities
       summary: post current electricity usage
       requestBody:
         content:
@@ -251,9 +201,14 @@ paths:
                 voltage:
                   type: number
                   description: IoT device's voltage in volt
+                  example: 205.67
                 current:
                   type: number
                   description: IoT device's currents in ampere
+                  example: 1.58
+              required:
+                - voltage
+                - current
       responses:
         '201':
           description: Data added
@@ -265,46 +220,29 @@ paths:
                   status:
                     type: string
                     description: status of the operation.
+                    example: Success
                   message:
                     type: string
                     description: Message indicating successfully added electricity usage.
+                    example: Data Added
 
   /v2/electricities/usages:
     get:
-      summary: get average power of electricity usage per minute
+      tags:
+        - Electricities
+      summary: Get average power usage per minute in the same day
+      security:
+        - bearerAuth: []
       parameters:
         - in: query
           name: date
           type: string
           description: Date of the usage.
+          example: 2021-12-21
           required: false
       responses:
         '200':
-          description: Successfully get all power usages on a given date (default is today)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: status of the operation.
-                  message:
-                    type: string
-                    description: Message indicating successfully get the usage.
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        timestamp:
-                          type: string
-                          description: Timestamp (in minute) of the usage.
-                        avgPower:
-                          type: number
-                          description: Average power of the usage.
-        '404':
-          description: Not Found, No electricity usage on a given date.
+          description: Successfully get all power usages on a given date.
           content:
             application/json:
               schema:
@@ -313,9 +251,73 @@ paths:
                   status:
                     type: string
                     description: Status of the operation.
+                    example: Success
                   message:
                     type: string
-                    description: Error message indicating no usage on a given date.
+                    description: Message indicating successfully get the usage.
+                    example: Successfully get average power usages on [date]
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          description: Timestamp (in minute) of the usage.
+                          example: 21.30
+                        avgPower:
+                          type: number
+                          description: Average power of the usage.
+                          example: 118.76
+        '404':
+          description: No power consumption on a given date.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                    example: Success
+                  message:
+                    type: string
+                    description: Error message indicating no power consumption on a given date.
+                    example: No electricity usage from [date] yet.
+
+  /v2/electricities/usages/hour:
+    get:
+      tags:
+        - Electricities
+      summary: Get average power usage per hour in the last 24 hour.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully get all power usages in the last 24 hour.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the operation.
+                    example: Success
+                  message:
+                    type: string
+                    description: Message indicating successfully get the usage.
+                    example: Successfully get avg power in the last 24h (per hour)
+                  data:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: array
+                        items:
+                          type: number
+                          description: Average power per hour
+                          example: 112.89
 
 components:
   securitySchemes:

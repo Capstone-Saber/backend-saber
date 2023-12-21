@@ -1,6 +1,5 @@
-require('dotenv').config();
 const jwt = require('jsonwebtoken');
-const jwtKey = process.env.JWT_SECRET;
+const { jwtSecret } = require('../config');
 
 const getToken = (headers) => {
   const authorizationHeader = headers.authorization;
@@ -9,7 +8,7 @@ const getToken = (headers) => {
   }
   else {
     const error = new Error("You need to login");
-    error.status = 401;
+    error.status = 403;
     throw error;
   }
 }
@@ -17,7 +16,7 @@ const getToken = (headers) => {
 const userVerification = async (req, res, next) => {
   try {
     const token = getToken(req.headers);
-    const decoded = jwt.verify(token, jwtKey);
+    const decoded = jwt.verify(token, jwtSecret);
     req.decoded = decoded;
     next();
   } catch (error) {

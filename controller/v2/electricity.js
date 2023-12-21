@@ -72,7 +72,7 @@ const averagePowerPerMinuteHandler = async (req, res) => {
 
     res.status(200).json({
       status: "Success",
-      message: `Successfully get all power usages on ${convertedDate}`,
+      message: `Successfully get average power usages on ${convertedDate}`,
       data: groupedUsageById
     })
   } catch (error) {
