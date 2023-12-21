@@ -22,7 +22,6 @@ const averagePowerPerMinuteHandler = async (req, res) => {
     // Set the end time
     const endTime = new Date(startTime);
     endTime.setUTCMilliseconds(999)
-    console.log(startTime, endTime)
 
     // Convert date to YYYY-MM-DD
     const convertedDate = newDate.getUTCFullYear() + "-" +
@@ -43,8 +42,9 @@ const averagePowerPerMinuteHandler = async (req, res) => {
       throw error;
     }
 
-    console.log(usagesSnapshot.docs[0].data().startDate.toDate())
+    // console.log(usagesSnapshot.docs[0].data().usages.length())
     const usages = usagesSnapshot.docs[0].data().usages
+    console.log(usages.length)
     usages.forEach(usage => {
       // Convert back the time to UTC+7
       let convertedTime = usage.timestamp.toDate()
@@ -138,12 +138,6 @@ const averagePowerPerHourHandler = async (req, res) => {
       return [avgPower]
     });
 
-    // [
-    //   [
-    //     [1, 1, 1,... 1], // Rerata per jamS
-    //   ]
-    // ]
-
     res.status(200).json({
       status: "Success",
       message: `Successfully get average power usages on ${convertedDate} (per hour)`,
@@ -218,11 +212,11 @@ const sendElectricityHandler = async (req, res, next) => {
     // Get voltage & current data from request body
     const { voltage, current } = req.body;
     // Get start time of usage
-    const startTime = new Date();
+    const endTime = new Date();
 
     const sensorRef = db.collection('electrcities');
     const usagesSnapshot = await sensorRef
-      .where('startDate', '>=', startTime)
+      .where('endTime', '<=', endTime)
       .limit(1)
       .get()
 
@@ -243,7 +237,8 @@ const sendElectricityHandler = async (req, res, next) => {
       });
     } else {
       const docID = nanoid()
-      startTime.setUTCHours(17, 0, 0, 0)
+      endTime.setUTCHours(endTime.getUTCHours() + 7)
+      endTime.setUTCHours(16, 59, 59, 999)
       const newUsage = {
         current,
         voltage,
@@ -251,7 +246,7 @@ const sendElectricityHandler = async (req, res, next) => {
       }
       await sensorRef.doc(docID).set({
         _id: docID,
-        startDate: startTime,
+        endTime,
         usages: [newUsage]
       })
     }
