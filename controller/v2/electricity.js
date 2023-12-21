@@ -8,13 +8,12 @@ const averagePowerPerMinuteHandler = async (req, res) => {
     let newDate;
     if (date) {
       newDate = new Date(date)
-      newDate.setUTCHours(0, 0, 0, 0)
     } else {
       newDate = new Date()
       console.log(newDate.toString())
+      newDate.setUTCHours(0, 0, 0, 0)
       // newDate.setUTCHours(newDate.getUTCHours() + 7, 0, 0, 0)
     }
-    newDate.setUTCHours(0, 0, 0, 0)
     // Get start time of usage
     const startTime = newDate;
     // Convert the time to UTC. I know it's a bad practice :(
@@ -213,10 +212,11 @@ const sendElectricityHandler = async (req, res, next) => {
     const { voltage, current } = req.body;
     // Get start time of usage
     const endTime = new Date();
+    console.log(endTime)
 
     const sensorRef = db.collection('electrcities');
     const usagesSnapshot = await sensorRef
-      .where('endTime', '<=', endTime)
+      .where('endTime', '>=', endTime)
       .limit(1)
       .get()
 
