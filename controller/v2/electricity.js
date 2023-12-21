@@ -8,20 +8,23 @@ const averagePowerPerMinuteHandler = async (req, res) => {
     let newDate;
     if (date) {
       newDate = new Date(date)
+      // Convert the time to UTC. I know it's a bad practice :(
+      newDate.setUTCHours(newDate.getUTCHours() - 7)
     } else {
       newDate = new Date()
-      console.log(newDate.toString())
-      newDate.setUTCHours(0, 0, 0, 0)
-      // newDate.setUTCHours(newDate.getUTCHours() + 7, 0, 0, 0)
+      const hour = newDate.getUTCHours()
+      if (hour < 17) {
+        newDate.setUTCHours(0, 0, 0, 0)
+        newDate.setUTCHours(newDate.getUTCHours() - 7)
+      } else {
+        newDate.setUTCHours(17, 0, 0, 0)
+      }
     }
     // Get start time of usage
     const startTime = newDate;
-    // Convert the time to UTC. I know it's a bad practice :(
-    startTime.setUTCHours(startTime.getUTCHours() - 7);
     // Set the end time
     const endTime = new Date(startTime);
     endTime.setUTCMilliseconds(999)
-
     // Convert date to YYYY-MM-DD
     const convertedDate = newDate.getUTCFullYear() + "-" +
       (newDate.getUTCMonth() + 1) + "-" +
@@ -43,7 +46,6 @@ const averagePowerPerMinuteHandler = async (req, res) => {
 
     // console.log(usagesSnapshot.docs[0].data().usages.length())
     const usages = usagesSnapshot.docs[0].data().usages
-    console.log(usages.length)
     usages.forEach(usage => {
       // Convert back the time to UTC+7
       let convertedTime = usage.timestamp.toDate()
@@ -84,63 +86,80 @@ const averagePowerPerMinuteHandler = async (req, res) => {
 
 const averagePowerPerHourHandler = async (req, res) => {
   try {
-    const { date } = req.query;
-    const newDate = date ? new Date(date) : new Date();
-    newDate.setUTCHours(0, 0, 0, 0)
-    // Get start time of usage
-    const startTime = newDate;
-    // Convert the time to UTC. I know it's a bad practice :(
-    startTime.setUTCHours(startTime.getUTCHours() - 7);
-    // Set the end time
-    const endTime = new Date(startTime);
-    endTime.setUTCMilliseconds(999)
-
-    // Convert date to YYYY-MM-DD
-    const convertedDate = newDate.getUTCFullYear() + "-" +
-      (newDate.getUTCMonth() + 1) + "-" +
-      (newDate.getUTCDate() + 1)
-
-    const sensorRef = db.collection('electrcities');
-    const usagesSnapshot = await sensorRef
-      .where('startDate', '>=', startTime)
-      .where('startDate', '<=', endTime)
+    const usagesRef = db.collection('electrcities')
+      .orderBy('startDate', 'desc')
       .limit(1)
-      .get()
+    const usagesSnapshot = await usagesRef.get();
 
-    // Check if there is a usage or not in a given date
-    if (usagesSnapshot.empty) {
-      const error = new Error(`No electricity usage from ${convertedDate} yet.`);
-      error.statusCode = 404;
-      throw error;
-    }
-
-    const usages = usagesSnapshot.docs[0].data().usages
-    usages.forEach(usage => {
-      // Convert back the time to UTC+7
-      let convertedTime = usage.timestamp.toDate()
+    // Get the last document
+    const usagesDoc = usagesSnapshot.docs[0];
+    let maxHour = 0;
+    let usages = usagesDoc.data().usages
+    usages = usages.map(usage => {
+      // Convert the time to UTC+7
+      const convertedTime = usage.timestamp.toDate()
       convertedTime.setUTCHours(convertedTime.getUTCHours() + 7)
-      const hour = ("0" + (convertedTime.getUTCHours())).slice(-2)
-      usage.power = usage.current * usage.voltage
-      usage.timestamp = hour
+      const timestamp = convertedTime.getUTCHours()
+      maxHour = timestamp
+      const power = usage.current * usage.voltage
+      return { timestamp, power }
     });
 
-    const groupedUsagePerHour = Object.entries(
-      usages.reduce((acc, { timestamp, power }) => {
-        // Group initialization
-        if (!acc[timestamp]) acc[timestamp] = [];
-        // Grouping
-        acc[timestamp].push(power);
-        return acc;
-      }, {})
-    ).map(([timestamp, power]) => {
+    let groupedByHour = []
+    for (let hour = 0; hour <= maxHour; hour++) {
+      let filteredUsage = usages.filter(({ timestamp }) => (timestamp == hour))
+      filteredUsage = filteredUsage.map(({ power }) => power)
+      result = filteredUsage.length ? filteredUsage : [0]
+      groupedByHour.push(result)
+    }
+    groupedByHour = groupedByHour.map((power) => {
       const avgPower = power.reduce((a, b) => a + b, 0) / power.length;
       return [avgPower]
-    });
+    })
+
+    let countUsage = groupedByHour.length
+    if (countUsage < 24) {
+      const next = db.collection('electrcities')
+        .orderBy('startDate', 'desc')
+        .startAfter(usagesDoc.data().startDate)
+        .limit(1)
+      const nextSnapshot = await next.get()
+
+      const nextUsageDoc = nextSnapshot.docs[0]
+      let usages = nextUsageDoc.data().usages
+      usages = usages.map(usage => {
+        // Convert the time to UTC+7
+        const convertedTime = usage.timestamp.toDate()
+        convertedTime.setUTCHours(convertedTime.getUTCHours() + 7)
+        const timestamp = convertedTime.getUTCHours()
+        const power = usage.current * usage.voltage
+        return { power, timestamp }
+      });
+
+      let yesterdayGroupedByHour = []
+      for (let hour = 0; hour < 24; hour++) {
+        let filteredUsage = usages.filter(({ timestamp }) => (timestamp == hour))
+        filteredUsage = filteredUsage.map(({ power }) => power)
+        result = filteredUsage.length ? filteredUsage : [0]
+        yesterdayGroupedByHour.push(result)
+      }
+      yesterdayGroupedByHour = yesterdayGroupedByHour.map((power) => {
+        const avgPower = power.reduce((a, b) => a + b, 0) / power.length;
+        return [avgPower]
+      })
+
+      let yesterdayIndex = yesterdayGroupedByHour.length - 1;
+      while (countUsage < 24) {
+        groupedByHour.unshift(yesterdayGroupedByHour[yesterdayIndex])
+        yesterdayIndex--
+        countUsage++
+      }
+    }
 
     res.status(200).json({
       status: "Success",
-      message: `Successfully get average power usages on ${convertedDate} (per hour)`,
-      data: [groupedUsagePerHour]
+      message: `Successfully get avg power in the last 24h (per hour)`,
+      data: [groupedByHour]
     })
   } catch (error) {
     res.status(error.statusCode || 500).json({
@@ -150,20 +169,90 @@ const averagePowerPerHourHandler = async (req, res) => {
   }
 }
 
+const sendElectricityHandler = async (req, res, next) => {
+  try {
+    // Get voltage & current data from request body
+    const { voltage, current } = req.body;
+    // Get start time of usage
+    const endTime = new Date();
+    console.log(endTime)
+
+    const sensorRef = db.collection('electrcities');
+    const usagesSnapshot = await sensorRef
+      .where('endTime', '>=', endTime)
+      .limit(1)
+      .get()
+
+    /* 
+      Check if there is a usage or not in a given date
+      If yes, update the usage doc
+      If not, create a new doc based on a given date
+    */
+    if (!usagesSnapshot.empty) {
+      const id = usagesSnapshot.docs[0].data()._id
+      const newUsage = {
+        current,
+        voltage,
+        timestamp: Timestamp.fromDate(new Date()).toDate()
+      }
+      await sensorRef.doc(id).update({
+        usages: FieldValue.arrayUnion(newUsage)
+      });
+    } else {
+      const docID = nanoid()
+      endTime.setUTCHours(endTime.getUTCHours() + 7)
+      const startDate = new Date(endTime)
+      startDate.setUTCHours(17, 0, 0, 0)
+      endTime.setUTCHours(16, 59, 59, 999)
+      const newUsage = {
+        current,
+        voltage,
+        timestamp: Timestamp.fromDate(new Date()).toDate()
+      }
+      await sensorRef.doc(docID).set({
+        _id: docID,
+        endTime,
+        startDate,
+        usages: [newUsage]
+      })
+    }
+
+    res.status(201).json({
+      status: "Success",
+      message: 'Data Added',
+    })
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      status: "Error",
+      message: error.message
+    })
+  }
+}
+
 // [ADMIN ONLY]
 const usageDetailHandler = async (req, res) => {
   try {
     const { date } = req.query;
-    const newDate = date ? new Date(date) : new Date();
-    newDate.setUTCHours(0, 0, 0, 0)
+    let newDate;
+    if (date) {
+      newDate = new Date(date)
+      // Convert the time to UTC. I know it's a bad practice :(
+      newDate.setUTCHours(newDate.getUTCHours() - 7)
+    } else {
+      newDate = new Date()
+      const hour = newDate.getUTCHours()
+      if (hour < 17) {
+        newDate.setUTCHours(0, 0, 0, 0)
+        newDate.setUTCHours(newDate.getUTCHours() - 7)
+      } else {
+        newDate.setUTCHours(17, 0, 0, 0)
+      }
+    }
     // Get start time of usage
     const startTime = newDate;
-    // Convert the time to UTC. I know it's a bad practice :(
-    startTime.setUTCHours(startTime.getUTCHours() - 7);
     // Set the end time
     const endTime = new Date(startTime);
     endTime.setUTCMilliseconds(999)
-
     // Convert date to YYYY-MM-DD
     const convertedDate = newDate.getUTCFullYear() + "-" +
       (newDate.getUTCMonth() + 1) + "-" +
@@ -206,63 +295,6 @@ const usageDetailHandler = async (req, res) => {
   }
 }
 
-const sendElectricityHandler = async (req, res, next) => {
-  try {
-    // Get voltage & current data from request body
-    const { voltage, current } = req.body;
-    // Get start time of usage
-    const endTime = new Date();
-    console.log(endTime)
-
-    const sensorRef = db.collection('electrcities');
-    const usagesSnapshot = await sensorRef
-      .where('endTime', '>=', endTime)
-      .limit(1)
-      .get()
-
-    /* 
-      Check if there is a usage or not in a given date
-      If yes, update the usage doc
-      If not, create a new doc based on a given date
-    */
-    if (!usagesSnapshot.empty) {
-      const id = usagesSnapshot.docs[0].data()._id
-      const newUsage = {
-        current,
-        voltage,
-        timestamp: Timestamp.fromDate(new Date()).toDate()
-      }
-      await sensorRef.doc(id).update({
-        usages: FieldValue.arrayUnion(newUsage)
-      });
-    } else {
-      const docID = nanoid()
-      endTime.setUTCHours(endTime.getUTCHours() + 7)
-      endTime.setUTCHours(16, 59, 59, 999)
-      const newUsage = {
-        current,
-        voltage,
-        timestamp: Timestamp.fromDate(new Date()).toDate()
-      }
-      await sensorRef.doc(docID).set({
-        _id: docID,
-        endTime,
-        usages: [newUsage]
-      })
-    }
-
-    res.status(201).json({
-      status: "Success",
-      message: 'Data Added',
-    })
-  } catch (error) {
-    res.status(error.statusCode || 500).json({
-      status: "Error",
-      message: error.message
-    })
-  }
-}
-
 // // [ADMIN ONLY]
 // const adminSendElectricityHandler = async (req, res, next) => {
 //   try {
@@ -301,6 +333,6 @@ const sendElectricityHandler = async (req, res, next) => {
 module.exports = {
   averagePowerPerMinuteHandler,
   averagePowerPerHourHandler,
-  usageDetailHandler,
   sendElectricityHandler,
+  usageDetailHandler,
 }
