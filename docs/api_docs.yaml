@@ -309,9 +309,9 @@ paths:
                     description: Message indicating successfully get the usage.
                     example: Successfully get avg power in the last 24h (per hour)
                   data:
-                    type: array
+                    type: object
                     items:
-                      properties:
+                    properties:
                       timestamp:
                         type: string
                         description: Timestamp (in hour) of the usage.
