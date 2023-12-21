@@ -44,7 +44,6 @@ const averagePowerPerMinuteHandler = async (req, res) => {
       throw error;
     }
 
-    // console.log(usagesSnapshot.docs[0].data().usages.length())
     const usages = usagesSnapshot.docs[0].data().usages
     usages.forEach(usage => {
       // Convert back the time to UTC+7
@@ -175,8 +174,8 @@ const sendElectricityHandler = async (req, res, next) => {
     const { voltage, current } = req.body;
     // Get start time of usage
     const endTime = new Date();
-    console.log(endTime)
 
+    // Querying
     const sensorRef = db.collection('electrcities');
     const usagesSnapshot = await sensorRef
       .where('endTime', '>=', endTime)
