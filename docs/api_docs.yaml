@@ -311,13 +311,15 @@ paths:
                   data:
                     type: array
                     items:
-                      type: array
-                      items:
-                        type: array
-                        items:
-                          type: number
-                          description: Average power per hour
-                          example: 112.89
+                      properties:
+                      timestamp:
+                        type: string
+                        description: Timestamp (in hour) of the usage.
+                        example: 21.30
+                      avgPower:
+                        type: number
+                        description: Average power of the usage.
+                        example: 118.76
 
 components:
   securitySchemes:

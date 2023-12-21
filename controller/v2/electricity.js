@@ -109,11 +109,12 @@ const averagePowerPerHourHandler = async (req, res) => {
       let filteredUsage = usages.filter(({ timestamp }) => (timestamp == hour))
       filteredUsage = filteredUsage.map(({ power }) => power)
       result = filteredUsage.length ? filteredUsage : [0]
-      groupedByHour.push(result)
+      const time = ("0" + (hour)).slice(-2) + ".00"
+      groupedByHour.push({ time, result })
     }
-    groupedByHour = groupedByHour.map((power) => {
-      const avgPower = power.reduce((a, b) => a + b, 0) / power.length;
-      return [avgPower]
+    groupedByHour = groupedByHour.map(({ time, result }) => {
+      const avgPower = result.reduce((a, b) => a + b, 0) / result.length;
+      return { time, avgPower }
     })
 
     let countUsage = groupedByHour.length
@@ -140,11 +141,12 @@ const averagePowerPerHourHandler = async (req, res) => {
         let filteredUsage = usages.filter(({ timestamp }) => (timestamp == hour))
         filteredUsage = filteredUsage.map(({ power }) => power)
         result = filteredUsage.length ? filteredUsage : [0]
-        yesterdayGroupedByHour.push(result)
+        const time = ("0" + (hour)).slice(-2) + ".00"
+        yesterdayGroupedByHour.push({ time, result })
       }
-      yesterdayGroupedByHour = yesterdayGroupedByHour.map((power) => {
-        const avgPower = power.reduce((a, b) => a + b, 0) / power.length;
-        return [avgPower]
+      yesterdayGroupedByHour = yesterdayGroupedByHour.map(({ time, result }) => {
+        const avgPower = result.reduce((a, b) => a + b, 0) / result.length;
+        return { time, avgPower }
       })
 
       let yesterdayIndex = yesterdayGroupedByHour.length - 1;
@@ -158,7 +160,7 @@ const averagePowerPerHourHandler = async (req, res) => {
     res.status(200).json({
       status: "Success",
       message: `Successfully get avg power in the last 24h (per hour)`,
-      data: [groupedByHour]
+      data: groupedByHour
     })
   } catch (error) {
     res.status(error.statusCode || 500).json({
