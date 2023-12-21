@@ -5,7 +5,15 @@ const { nanoid } = require('nanoid')
 const averagePowerPerMinuteHandler = async (req, res) => {
   try {
     const { date } = req.query;
-    const newDate = date ? new Date(date) : new Date();
+    let newDate;
+    if (date) {
+      newDate = new Date(date)
+      newDate.setUTCHours(0, 0, 0, 0)
+    } else {
+      newDate = new Date()
+      console.log(newDate.toString())
+      // newDate.setUTCHours(newDate.getUTCHours() + 7, 0, 0, 0)
+    }
     newDate.setUTCHours(0, 0, 0, 0)
     // Get start time of usage
     const startTime = newDate;
@@ -34,7 +42,9 @@ const averagePowerPerMinuteHandler = async (req, res) => {
       throw error;
     }
 
+    // console.log(usagesSnapshot.docs[0].data().usages.length())
     const usages = usagesSnapshot.docs[0].data().usages
+    console.log(usages.length)
     usages.forEach(usage => {
       // Convert back the time to UTC+7
       let convertedTime = usage.timestamp.toDate()
@@ -128,12 +138,6 @@ const averagePowerPerHourHandler = async (req, res) => {
       return [avgPower]
     });
 
-    // [
-    //   [
-    //     [1, 1, 1,... 1], // Rerata per jamS
-    //   ]
-    // ]
-
     res.status(200).json({
       status: "Success",
       message: `Successfully get average power usages on ${convertedDate} (per hour)`,
@@ -207,16 +211,12 @@ const sendElectricityHandler = async (req, res, next) => {
   try {
     // Get voltage & current data from request body
     const { voltage, current } = req.body;
-
     // Get start time of usage
-    const startTime = new Date();
-    startTime.setUTCHours(0, 0, 0, 0)
-    // Convert the time to UTC. I know it's a bad practice :(
-    startTime.setUTCHours(startTime.getUTCHours() - 7);
+    const endTime = new Date();
 
     const sensorRef = db.collection('electrcities');
     const usagesSnapshot = await sensorRef
-      .where('startDate', '>=', startTime)
+      .where('endTime', '<=', endTime)
       .limit(1)
       .get()
 
@@ -237,6 +237,8 @@ const sendElectricityHandler = async (req, res, next) => {
       });
     } else {
       const docID = nanoid()
+      endTime.setUTCHours(endTime.getUTCHours() + 7)
+      endTime.setUTCHours(16, 59, 59, 999)
       const newUsage = {
         current,
         voltage,
@@ -244,7 +246,7 @@ const sendElectricityHandler = async (req, res, next) => {
       }
       await sensorRef.doc(docID).set({
         _id: docID,
-        startDate: startTime,
+        endTime,
         usages: [newUsage]
       })
     }
