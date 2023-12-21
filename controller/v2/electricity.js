@@ -201,9 +201,11 @@ const sendElectricityHandler = async (req, res, next) => {
       });
     } else {
       const docID = nanoid()
-      endTime.setUTCHours(endTime.getUTCHours() + 7)
       const startDate = new Date(endTime)
+      startDate.setUTCHours(startDate.getUTCHours() - 7)
       startDate.setUTCHours(17, 0, 0, 0)
+
+      endTime.setUTCHours(endTime.getUTCHours() + 7)
       endTime.setUTCHours(16, 59, 59, 999)
       const newUsage = {
         current,
