@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="image/logo.png" alt="Saber logo" height="180" />
+  <img src="images/logo.png" alt="Saber logo" height="180" />
 </p>
 
 <h1 align="center">Saber Backend Service</h1>
@@ -9,7 +9,7 @@
 ## Cloud Architecture
 
 <p align="center">
-  <img src="image/cloud-architecture.png" alt="Cloud Architecture" />
+  <img src="images/cloud-architecture.png" alt="Cloud Architecture" />
 </p>
 
 ## Web Service
