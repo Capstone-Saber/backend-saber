@@ -84,10 +84,12 @@ paths:
                 username:
                   type: string
                   description: User's username.
+                  example: johndoe
                 password:
                   type: string
                   format: password
                   description: User's password.
+                  example: loremipsum
               required:
                 - username
                 - password
@@ -102,12 +104,15 @@ paths:
                   status:
                     type: string
                     description: Status of the operation.
+                    example: Success
                   message:
                     type: string
                     description: Message indicating successful login.
+                    example: Login Successful
                   token:
                     type: string
                     description: JWT token for the user session.
+                    example: eyJjbGllbnRfaWQiOiJZekV6TUdkb01ISm5PSEJpT0cxaWJEaHlOVEE9IiwicmVzcG9u...
         '400':
           description: Wrong username or password
           content:
@@ -118,9 +123,11 @@ paths:
                   status:
                     type: string
                     description: Status of the operation.
+                    example: Error
                   message:
                     type: string
                     description: Error message indicating invalid username or password.
+                    example: Wrong username or password
 
   /v1/users/:
     get:
